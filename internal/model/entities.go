@@ -11,7 +11,7 @@ type (
 	Message struct {
 		RoomID   int64  `json:"roomID" db:"room_id"`
 		ClientID int64  `json:"clientID" db:"clientID"`
-		Message  string `json:"message" db:"message"`
+		Content  string `json:"content" db:"content"`
 		SentAt   int64  `json:"sentAt" db:"sent_at"` // unix
 	}
 )
