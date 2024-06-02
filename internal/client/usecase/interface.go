@@ -6,11 +6,14 @@ import (
 )
 
 type UseCase interface {
-	//Message
+	Message
 	Room
 }
 
 type Message interface {
+	SaveMessage(ctx context.Context, message model.Message) (err error)
+	GetMessages(ctx context.Context, roomID int64) (messages []model.Message, err error)
+	GetAllMessages(ctx context.Context) (messages []model.Message, err error)
 }
 
 type Room interface {

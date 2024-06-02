@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"github.com/glamostoffer/ValinorChat/internal/model"
 	"github.com/glamostoffer/ValinorChat/pkg/errlist"
 	"log/slog"
@@ -35,27 +34,26 @@ func (r *ClientRepository) CreateMessage(ctx context.Context, clientID, roomID i
 func (r *ClientRepository) GetMessagesFromRoom(ctx context.Context, roomID int64) (messages []model.Message, err error) {
 	log := r.log.With(slog.String("op", "message_repo.GetMessagesFromRoom"))
 
-	rows, err := r.db.QueryContext(ctx, queryGetMessagesFromRoom, roomID)
-	defer func() {
-		if rows != nil {
-			err = errors.Join(err, rows.Close())
-		}
-	}()
+	messages = make([]model.Message, 0)
 
+	err = r.db.SelectContext(ctx, &messages, queryGetMessagesFromRoom, roomID)
 	if err != nil {
 		log.Error(err.Error())
 		return nil, err
 	}
 
-	for rows.Next() {
-		message := model.Message{}
+	return messages, nil
+}
 
-		if scanErr := rows.Scan(&message); scanErr != nil {
-			log.Error("can't scan value from row to room model", err.Error())
-			return nil, scanErr
-		}
+func (r *ClientRepository) GetAllMessages(ctx context.Context) (messages []model.Message, err error) {
+	log := r.log.With(slog.String("op", "message_repo.GetAllMessages"))
 
-		messages = append(messages, message)
+	messages = make([]model.Message, 0)
+
+	err = r.db.SelectContext(ctx, &messages, queryGetMessages)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
 	}
 
 	return messages, nil

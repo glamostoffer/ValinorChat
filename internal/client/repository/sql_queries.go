@@ -9,14 +9,12 @@ values
 ($1, $2)
 returning id;
 `
-	// TODO вот это надо бы проверить
+	// TODO исправить
 	queryGetRooms = `
-select r.id, r.name, r.owner, array_agg(ur.user_id) as client_ids
+select r.id, r.name, r.owner
 from chat."room" r
 join user_room ur on r.id = ur.room_id
-where ur.user_id = $1
-group by 
-r.id, r.name, r.owner;
+where ur.user_id = $1;
 `
 	queryAddClientToRoom = `
 insert into user_room
@@ -35,13 +33,17 @@ and room_id = $2;
 const (
 	queryCreateMessage = `
 insert into chat."message"
-(room_id, client_id, "message", sent_at)
+(room_id, client_id, content, sent_at)
 values 
 ($1, $2, $3, to_timestamp($4));
 `
 	queryGetMessagesFromRoom = `
-select (id, room_id, client_id, "message", sent_at)
+select id, room_id, client_id, content, round(extract(epoch from sent_at)) as sent_at
 from chat."message"
-where room_id = $1
+where room_id = $1;
 `
+	queryGetMessages = `
+select id, room_id, client_id, content, round(extract(epoch from sent_at)) as sent_at
+from chat."message"
+order by room_id;`
 )

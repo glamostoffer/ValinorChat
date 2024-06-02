@@ -4,14 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/glamostoffer/ValinorChat/internal/client/delivery/ws"
 	"github.com/glamostoffer/ValinorChat/internal/client/repository"
 	"github.com/glamostoffer/ValinorChat/internal/client/usecase"
 	"github.com/glamostoffer/ValinorChat/internal/config"
 	"github.com/glamostoffer/ValinorChat/internal/system/grpc"
+	"github.com/glamostoffer/ValinorChat/internal/system/http"
+	"github.com/glamostoffer/ValinorChat/internal/system/wsmanager"
 	"github.com/glamostoffer/ValinorChat/pkg/constants"
 	"github.com/glamostoffer/ValinorChat/pkg/pg_connector"
 	"github.com/glamostoffer/ValinorChat/pkg/tx_manager"
-
+	authclient "github.com/glamostoffer/ValinorProtos/auth"
 	"log/slog"
 )
 
@@ -42,19 +45,25 @@ func (a *App) Start(ctx context.Context) error {
 	log := a.log.With(slog.String("op", "app.Start"))
 
 	pg := pg_connector.New(a.cfg.Postgres)
-
 	tx := tx_manager.New(pg)
 
-	clientRepo := repository.New(pg, a.log)
+	auth := authclient.New(a.cfg.AuthCfg)
 
-	clientUC := usecase.New(clientRepo, tx, a.log)
+	clientRepo := repository.New(pg, a.log)
+	clientUC := usecase.New(clientRepo, tx, a.log, auth)
+
+	wsManager := wsmanager.New(a.log)
+	wsHandler := ws.New(wsManager, auth, clientUC)
 
 	grpcServer := grpc.NewServer(a.cfg, clientUC)
+	httpServer := http.New(a.cfg.HTTP, a.log, *wsHandler)
 
 	a.components = append(
 		a.components,
+		component{auth, "auth client"},
 		component{pg, "postgres"},
 		component{tx, "tx manager"},
+		component{httpServer, "http server"},
 		component{grpcServer, "grpc server"},
 	)
 

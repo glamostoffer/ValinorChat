@@ -21,3 +21,21 @@ func ListOfRoomsToProto(in []model.Room) (out []*clientProto.Room) {
 
 	return out
 }
+
+func MessagesToProto(in []model.Message) (out []*clientProto.Message) {
+	out = make([]*clientProto.Message, 0, len(in))
+
+	for _, message := range in {
+		protoMessage := clientProto.Message{
+			RoomID:   message.RoomID,
+			ClientID: message.ClientID,
+			Message:  message.Content,
+			SentAt:   message.SentAt,
+			Username: message.Username,
+		}
+
+		out = append(out, &protoMessage)
+	}
+
+	return out
+}

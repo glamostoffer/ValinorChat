@@ -14,3 +14,8 @@ const (
 	FmtCannotStop    = "can't stop"
 	FmtErrOnStopping = "error on stopping"
 )
+
+const (
+	UserLocalsKey = "user"
+	UserIDKey     = "user_id"
+)

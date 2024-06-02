@@ -20,4 +20,5 @@ type Room interface {
 type Message interface {
 	CreateMessage(ctx context.Context, clientID, roomID int64, message string) (err error)
 	GetMessagesFromRoom(ctx context.Context, roomID int64) ([]model.Message, error)
+	GetAllMessages(ctx context.Context) (messages []model.Message, err error)
 }

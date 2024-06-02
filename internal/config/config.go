@@ -2,18 +2,22 @@ package config
 
 import (
 	"flag"
+	"github.com/glamostoffer/ValinorChat/internal/system/http"
 	pg "github.com/glamostoffer/ValinorChat/pkg/pg_connector"
+	authclient "github.com/glamostoffer/ValinorProtos/auth"
 	"github.com/ilyakaznacheev/cleanenv"
 	"os"
 	"time"
 )
 
 type Config struct {
-	Env          string        `yaml:"env"`
-	StartTimeout time.Duration `yaml:"start_timeout"`
-	StopTimeout  time.Duration `yaml:"stop_timeout"`
-	GRPC         GRPCConfig    `yaml:"grpc"`
-	Postgres     pg.Config     `yaml:"postgres"`
+	Env          string            `yaml:"env"`
+	StartTimeout time.Duration     `yaml:"start_timeout"`
+	StopTimeout  time.Duration     `yaml:"stop_timeout"`
+	GRPC         GRPCConfig        `yaml:"grpc"`
+	HTTP         http.Config       `yaml:"http"`
+	AuthCfg      authclient.Config `yaml:"auth_cfg"`
+	Postgres     pg.Config         `yaml:"postgres"`
 }
 
 type GRPCConfig struct {

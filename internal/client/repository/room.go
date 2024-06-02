@@ -2,10 +2,8 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"github.com/glamostoffer/ValinorChat/internal/model"
 	"github.com/glamostoffer/ValinorChat/pkg/errlist"
-	"github.com/lib/pq"
 	"log/slog"
 )
 
@@ -28,33 +26,40 @@ func (r *ClientRepository) CreateRoom(
 func (r *ClientRepository) GetRooms(ctx context.Context, hostID int64) (rooms []model.Room, err error) {
 	log := r.log.With(slog.String("op", "room_repo.GetRooms"))
 
-	rows, err := r.db.QueryContext(ctx, queryGetRooms, hostID)
-	defer func() {
-		if rows != nil {
-			err = errors.Join(err, rows.Close())
-		}
-	}()
+	rooms = make([]model.Room, 0)
 
+	err = r.db.SelectContext(ctx, &rooms, queryGetRooms, hostID)
 	if err != nil {
 		log.Error(err.Error())
 		return nil, err
 	}
 
-	for rows.Next() {
-		room := model.Room{}
-		clientIDs := pq.Int64Array{}
-
-		if scanErr := rows.Scan(&room.ID, &room.Name, &room.OwnerID, &clientIDs); scanErr != nil {
-			log.Error("can't scan value from row to room model", err.Error())
-			return nil, scanErr
-		}
-
-		room.ClientIDs = clientIDs
-
-		rooms = append(rooms, room)
-	}
-
 	return rooms, nil
+	//rows, err := r.db.QueryContext(ctx, queryGetRooms, hostID)
+	//defer func() {
+	//	if rows != nil {
+	//		err = errors.Join(err, rows.Close())
+	//	}
+	//}()
+	//
+	//if err != nil {
+	//	log.Error(err.Error())
+	//	return nil, err
+	//}
+	//
+	//for rows.Next() {
+	//	room := model.Room{}
+	//	clientIDs := pq.Int64Array{}
+	//
+	//	if scanErr := rows.Scan(&room.ID, &room.Name, &room.OwnerID, &clientIDs); scanErr != nil {
+	//		log.Error("can't scan value from row to room model", err.Error())
+	//		return nil, scanErr
+	//	}
+	//
+	//	room.ClientIDs = clientIDs
+	//
+	//	rooms = append(rooms, room)
+	//}
 }
 
 func (r *ClientRepository) AddClientToRoom(ctx context.Context, clientID int64, roomID int64) (err error) {

@@ -62,3 +62,14 @@ func (s *ClientService) RemoveClientFromRoom(
 
 	return nil, err
 }
+
+func (s *ClientService) GetMessagesFromRoom(
+	ctx context.Context,
+	req *clientProto.GetMessagesFromRoomRequest,
+) (resp *clientProto.GetMessagesFromRoomResponse, err error) {
+	messages, err := s.uc.GetMessages(ctx, req.GetRoomID())
+
+	return &clientProto.GetMessagesFromRoomResponse{
+		Messages: convert.MessagesToProto(messages),
+	}, err
+}
